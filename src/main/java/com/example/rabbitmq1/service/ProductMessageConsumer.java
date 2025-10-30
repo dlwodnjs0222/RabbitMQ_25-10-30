@@ -20,8 +20,15 @@ public class ProductMessageConsumer {
     @RabbitListener(queues = RabbitConfig.QUEUE_NAME2)
     public void receiveMessage(String jsonMessage) {
         ProductMessage message = gson.fromJson(jsonMessage, ProductMessage.class);
+
+        // ✅ messageId 중복 방지
+        if (repository.existsByMessageId(message.getMessageId())) {
+            System.out.println("⚠️ Duplicate message skipped: " + message.getMessageId());
+            return; // 이미 저장된 메시지면 무시
+        }
+
         repository.save(message);
-        System.out.println("Saved message: " + message.getTitle());
+        System.out.println("✅ Saved message: " + message.getTitle());
     }
 }
 
